@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Multi-Tool: Excel to Text</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* CSS Variables for Colors and Shadows */
+        :root {
+            /* Primary Brand Colors */
+            --primary-orange: #ff4d03;
+            --primary-orange-hover: #cc3d02;
+            --primary-black: #000000;
+            --primary-white: #ffffff; /* Explicitly define white for contrast */
+
+            /* Dark Theme Greys - THESE ARE YOUR DARK GRAY BASE COLORS */
+            --dark-bg: #222222; /* Body background */
+            --dark-section-bg: #333333; /* General section/container background */
+            --dark-element-bg: #444444; /* Inputs, table cells, text areas, subtle backgrounds */
+            --dark-border: #555555; /* General borders, disabled elements */
+            --dark-table-header-bg: #555555; /* Table header background */
+            --dark-alt-row-bg: #555555; /* Alternate table row background */
+
+            /* Text Colors */
+            --light-text: #e0e0e0; /* Main body and section text */
+            --medium-light-text: #bbbbbb; /* Subtler text like filenames, labels */
+            --muted-text: #999999; /* Disabled button text, less important info */
+
+            /* Box Shadows */
+            --shadow-light: 0 4px 10px rgba(0,0,0,0.3);
+            --shadow-medium: 0 8px 20px rgba(0,0,0,0.4);
+            --shadow-deep: 0 12px 30px rgba(0, 0, 0, 0.4);
+            --shadow-button-hover: 0 6px 14px rgba(0, 0, 0, 0.5);
+            --shadow-button-td: 0 2px 4px rgba(0, 0, 0, 0.2);
+            --shadow-button-td-hover: 0 3px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Base and Common Styles for the entire page */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            /* Adjusted padding-top as navbar is removed */
+            padding: 40px 20px; /* Reduced top padding */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px; /* Space between different tool sections */
+            background: var(--dark-bg);
+            color: var(--light-text);
+            line-height: 1.6;
+        }
+
+        /* Navigation Bar Styles - REMOVED AS REQUESTED */
+        /* .navbar { ... } */
+
+        /* Generic container for each section to apply consistent padding and shadow */
+        .section-container {
+            border-radius: 20px;
+            padding: 30px;
+            background: var(--dark-section-bg);
+            box-shadow: var(--shadow-deep);
+            width: 90%;
+            max-width: 980px;
+            color: var(--light-text);
+        }
+
+        /* Base style for form inputs and selects */
+        .form-input-base {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 16px;
+            border-radius: 12px;
+            border: 2px solid var(--dark-border);
+            background: var(--dark-element-bg);
+            color: var(--light-text);
+            transition: border-color 0.3s ease, background 0.3s ease;
+            outline-offset: 2px;
+        }
+
+        .form-input-base:hover {
+            background: #555555;
+            border-color: #888888;
+        }
+
+        .form-input-base:focus {
+            outline: none;
+            border-color: #888888;
+            box-shadow: 0 0 5px 2px rgba(136, 136, 136, 0.5);
+        }
+
+        /* Base Button Styles */
+        .btn-base {
+            border: none;
+            border-radius: 10px;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: var(--shadow-light);
+            transition: background-color 0.3s, box-shadow 0.3s;
+            user-select: none;
+            color: var(--primary-black);
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background: var(--primary-orange);
+        }
+
+        .btn-primary:not(:disabled):hover {
+            background: var(--primary-orange-hover);
+            box-shadow: var(--shadow-button-hover);
+        }
+
+        .btn-base:disabled {
+            background: var(--dark-border);
+            cursor: not-allowed;
+            box-shadow: none;
+            color: var(--muted-text);
+        }
+
+        .btn-base:focus {
+            outline: none;
+            box-shadow: 0 0 8px 3px rgba(136, 136, 136, 0.5);
+        }
+
+        /* --- Styles for PDF to PNG Section --- */
+        /* (Not directly used in this specific HTML, but kept for consistency if other tools are present) */
+        .pdf-section {
+            color: var(--light-text);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 20px;
+        }
+        .pdf-section h2 {
+            font-weight: 700;
+            color: var(--primary-orange);
+            margin-bottom: 10px;
+            user-select: none;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .pdf-section input[type="file"] {
+            width: 280px;
+            max-width: 90%;
+            padding: 20px;
+            font-size: 16px;
+            border-radius: 12px;
+            border: 2px dashed var(--dark-border);
+            background: var(--dark-element-bg);
+            color: var(--medium-light-text);
+            transition: border-color 0.3s ease, background 0.3s ease;
+            outline-offset: 2px;
+            cursor: pointer;
+        }
+        .pdf-section input[type="file"]:hover {
+            background: #555555;
+            border-color: #888888;
+        }
+        .pdf-section input[type="file"]:focus {
+            outline: none;
+            border-color: #888888;
+            box-shadow: 0 0 5px 2px #888888;
+        }
+
+        .pdf-section #preview {
+            margin: 0 auto;
+            width: 500px;
+            height: 500px;
+            object-fit: contain;
+            border-radius: 16px;
+            box-shadow: var(--shadow-medium);
+            background: var(--dark-element-bg);
+            border: 2px solid var(--dark-border);
+            transition: box-shadow 0.3s ease;
+        }
+        .pdf-section #preview:hover {
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+        }
+        .pdf-section #filename {
+            font-weight: 600;
+            font-size: 18px;
+            color: var(--medium-light-text);
+            margin-top: 12px;
+            user-select: text;
+            max-width: 500px;
+            word-break: break-word;
+        }
+        .pdf-section .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        .pdf-section button {
+            border: none;
+            border-radius: 10px;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: var(--shadow-light);
+            transition: background-color 0.3s, box-shadow 0.3s;
+            user-select: none;
+            color: var(--primary-black);
+            min-width: 120px;
+            background: var(--primary-orange);
+        }
+        .pdf-section button:disabled {
+            background: var(--dark-border);
+            cursor: not-allowed;
+            box-shadow: none;
+            color: var(--muted-text);
+        }
+        .pdf-section button:not(:disabled):hover {
+            background: var(--primary-orange-hover);
+            box-shadow: var(--shadow-button-hover);
+        }
+        .pdf-section button:focus {
+            outline: none;
+            box-shadow: 0 0 8px 3px rgba(136, 136, 136, 0.5);
+        }
+        .pdf-section canvas {
+            display: none;
+        }
+        /* Responsive for PDF section */
+        @media (max-width: 540px) {
+            .pdf-section #preview {
+                width: 90vw;
+                height: 90vw;
+            }
+            .pdf-section #filename {
+                max-width: 90vw;
+                font-size: 16px;
+            }
+            .pdf-section input[type="file"] {
+                width: 90vw;
+            }
+            .pdf-section button {
+                min-width: 100px;
+                padding: 10px 18px;
+                font-size: 14px;
+            }
+        }
+
+        /* --- Styles for Excel Upload & Text Update per Row Section --- */
+        .excel-text-section {
+            color: var(--light-text);
+            padding: 20px;
+        }
+        .excel-text-section .heading-container {
+            max-width: 720px;
+            margin: 0 auto 30px auto;
+            padding: 0 15px;
+        }
+        .excel-text-section h2, .excel-text-section h3 {
+            background-color: var(--dark-element-bg);
+            padding: 15px 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow-light);
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 20px;
+            width: fit-content;
+            text-align: center;
+            color: var(--primary-orange);
+        }
+        .excel-text-section .file-upload-container {
+            text-align: center;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        .excel-text-section .file-upload-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        /* New class for the row containing Download All, EMI, and Tenor buttons */
+        .excel-text-section .main-buttons-row {
+            display: flex;
+            gap: 10px; /* Space between the buttons */
+            justify-content: center;
+            flex-wrap: wrap; /* Ensure responsiveness */
+            margin-top: 10px;
+        }
+        .excel-text-section .custom-file-label {
+            padding: 6px 12px; /* Smaller padding for label button */
+            display: inline-flex; /* Use flex for icon and text alignment */
+            align-items: center;
+            gap: 5px; /* Space between icon and text */
+            border: none;
+            border-radius: 8px;
+            font-size: 13px; /* Smaller font size */
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: var(--shadow-light);
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            user-select: none;
+            color: var(--primary-black);
+            background-color: var(--primary-orange);
+        }
+        .excel-text-section .custom-file-label:hover {
+            background-color: var(--primary-orange-hover);
+            box-shadow: var(--shadow-button-hover);
+        }
+        .excel-text-section #excelFile {
+            display: none;
+        }
+        .excel-text-section .file-name-display {
+            margin-top: 0;
+            color: var(--medium-light-text);
+            font-weight: 500;
+            font-size: 12px; /* Even smaller font size for filename */
+        }
+        /* New style for the action buttons in the excel-text-section */
+        .excel-text-section .action-button {
+            padding: 6px 12px; /* Smaller padding */
+            border-radius: 8px;
+            font-size: 13px; /* Smaller font size */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            color: var(--primary-black);
+            background-color: var(--primary-orange);
+            display: inline-flex; /* Use flex for icon and text alignment */
+            align-items: center;
+            gap: 5px; /* Space between icon and text */
+        }
+        .excel-text-section .action-button:hover {
+            background-color: var(--primary-orange-hover);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .excel-text-section #tableContainer {
+            max-height: 500px;
+            overflow-y: auto;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--dark-element-bg);
+        }
+
+        .excel-text-section table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 0;
+            background-color: var(--dark-element-bg);
+            color: var(--light-text);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        .excel-text-section th, .excel-text-section td {
+            border: 1px solid var(--dark-border);
+            padding: 5px; /* Even smaller padding for table cells */
+            text-align: left;
+            color: var(--light-text);
+            font-size: 12px; /* Even smaller font for table content */
+        }
+        .excel-text-section th {
+            background-color: var(--dark-table-header-bg);
+            font-weight: 600;
+        }
+        .excel-text-section td {
+            background-color: var(--dark-element-bg);
+        }
+        .excel-text-section tr:nth-child(even) td {
+            background-color: var(--dark-alt-row-bg);
+        }
+        /* Specific style for buttons within table cells */
+        .excel-text-section td .table-action-button { /* New class for table buttons */
+            padding: 3px 8px; /* Very small padding */
+            border-radius: 5px;
+            font-size: 11px; /* Very small font size */
+            margin: 2px; /* Reduced margin for table buttons */
+            box-shadow: var(--shadow-button-td);
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease, box-shadow 0.2s ease;
+            color: var(--primary-black);
+            background-color: var(--primary-orange);
+            display: inline-flex; /* Use flex for icon alignment */
+            align-items: center;
+            gap: 3px; /* Smaller gap for icon and text */
+        }
+        .excel-text-section td .table-action-button:hover {
+            background-color: var(--primary-orange-hover);
+            box-shadow: var(--shadow-button-td-hover);
+        }
+        /* Styling for the text block (now a div) */
+        .excel-text-section #textBlock {
+            background-color: var(--dark-element-bg);
+            color: var(--light-text);
+            border: 1px solid var(--dark-border);
+            font-family: monospace;
+            padding: 12px;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            /* Changed from textarea to div, so resize is not applicable */
+            /* resize: vertical; */
+            width: calc(100% - 24px); /* Account for padding */
+            min-height: 150px;
+            height: 300px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            white-space: pre; /* Preserve whitespace and newlines, no automatic wrapping */
+            overflow-x: scroll; /* Always show horizontal scrollbar */
+            word-break: normal; /* Do not break words unless explicit break is present */
+            overflow-y: auto; /* Keep vertical scrollbar for long content */
+            box-sizing: border-box; /* Ensure padding is included in width */
+        }
+        /* Removed textarea:focus as it's now a div */
+        /* .excel-text-section textarea:focus {
+            border-color: #888888;
+            outline: none;
+        } */
+
+        /* --- Styles for Excel Matcher Tool Section --- */
+        /* (Not directly used in this specific HTML, but kept for consistency if other tools are present) */
+        .excel-matcher-section {
+            font-family: 'Poppins', sans-serif;
+            color: var(--light-text);
+            padding: 36px 48px;
+        }
+        .excel-matcher-section .animated-title {
+            position: relative;
+            overflow: hidden;
+            font-size: 2.8rem;
+            font-weight: 700;
+            background: linear-gradient(270deg, #ff0000, #ff0000, #000000, #000000, #ff0000);
+            background-size: 1000% 1000%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientMove 10s ease infinite;
+            text-align: center;
+            margin-bottom: 32px;
+            cursor: default;
+            user-select: none;
+        }
+        .excel-matcher-section .bike-on-title {
+            position: absolute;
+            top: 0;
+            right: -60px;
+            font-size: 28px;
+            animation: bikeRideRightToLeft 6s linear infinite;
+            z-index: 5;
+        }
+        @keyframes bikeRideRightToLeft {
+            0% { right: -60px; }
+            100% { right: 100%; }
+        }
+        @keyframes gradientMove {
+            0% {background-position: 0% 50%;}
+            50% {background-position: 100% 50%;}
+            100% {background-position: 0% 50%;}
+        }
+        .excel-matcher-section label {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 6px;
+            display: block;
+            color: var(--medium-light-text);
+            user-select: text;
+            margin-top: 15px;
+        }
+        .excel-matcher-section input[type="file"], .excel-matcher-section select {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 16px;
+            border-radius: 12px;
+            border: 2px solid var(--dark-border);
+            background: var(--dark-element-bg);
+            color: var(--light-text);
+            transition: border-color 0.3s ease, background 0.3s ease;
+            outline-offset: 2px;
+            user-select: text;
+        }
+        .excel-matcher-section input[type="file"]::-webkit-file-upload-button {
+            background-color: var(--primary-orange);
+            color: var(--primary-black);
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.25s ease;
+            user-select: none;
+        }
+        .excel-matcher-section input[type="file"]::-webkit-file-upload-button:hover {
+            background-color: var(--primary-orange-hover);
+        }
+        .excel-matcher-section button {
+            margin-top: 30px;
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--primary-orange), var(--primary-orange-hover));
+            color: var(--primary-black);
+            border: none;
+            border-radius: 16px;
+            box-shadow: var(--shadow-medium);
+            cursor: pointer;
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+            user-select: none;
+        }
+        .excel-matcher-section button:disabled {
+            background: var(--dark-border);
+            box-shadow: none;
+            cursor: not-allowed;
+            color: var(--muted-text);
+        }
+        .excel-matcher-section button:hover:not(:disabled) {
+            background: linear-gradient(45deg, var(--primary-orange-hover), #b33602);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+        }
+        .excel-matcher-section h3 {
+            margin-top: 48px;
+            margin-bottom: 16px;
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: var(--primary-orange);
+            user-select: none;
+            letter-spacing: 0.05em;
+            text-shadow: 0 0 12px rgba(255,77,3,0.7);
+        }
+        .excel-matcher-section #searchResults, .excel-matcher-section #unmatchedColumnA {
+            background: var(--dark-section-bg);
+            border-radius: 16px;
+            padding: 20px;
+            max-height: 480px;
+            overflow-x: auto;
+            overflow-y: auto;
+            box-shadow: inset 0 0 15px rgba(255,255,255,0.05), var(--shadow-medium);
+            user-select: text;
+            font-size: 14px;
+            color: var(--light-text);
+        }
+        .excel-matcher-section table {
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 900px;
+            table-layout: fixed;
+            user-select: text;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .excel-matcher-section #searchResults table {
+            display: block;
+            width: max-content;
+        }
+        .excel-matcher-section thead tr {
+            background: linear-gradient(90deg, var(--primary-orange), var(--primary-orange-hover));
+            color: var(--primary-black);
+            font-weight: 700;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            user-select: none;
+        }
+        .excel-matcher-section th, .excel-matcher-section td {
+            padding: 14px 10px;
+            border-bottom: 1px solid var(--dark-border);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            vertical-align: middle;
+            font-family: monospace;
+        }
+        .excel-text-section tbody tr:nth-child(even) {
+            background-color: var(--dark-element-bg);
+        }
+        .excel-text-section tbody tr:hover {
+            background-color: var(--primary-orange-hover);
+            color: var(--primary-white);
+            transition: background-color 0.3s ease;
+            cursor: default;
+        }
+        .excel-matcher-section #unmatchedColumnA table {
+            min-width: auto;
+            table-layout: auto;
+            font-family: monospace;
+            white-space: nowrap;
+        }
+        .excel-matcher-section #unmatchedColumnA td {
+            padding: 10px 14px;
+            border-bottom: none;
+            border-right: 1px solid var(--dark-border);
+            color: var(--medium-light-text);
+        }
+        .excel-matcher-section #unmatchedColumnA td:last-child {
+            border-right: none;
+        }
+        /* Scrollbar styling for containers in Excel Matcher */
+        .excel-matcher-section #searchResults::-webkit-scrollbar, .excel-matcher-section #unmatchedColumnA::-webkit-scrollbar {
+            height: 10px;
+            width: 10px;
+        }
+        .excel-matcher-section #searchResults::-webkit-scrollbar-thumb, .excel-matcher-section #unmatchedColumnA::-webkit-scrollbar-thumb {
+            background: var(--primary-orange);
+            border-radius: 10px;
+        }
+        .excel-matcher-section #searchResults::-webkit-scrollbar-track, .excel-matcher-section #unmatchedColumnA::-webkit-scrollbar-track {
+            background: var(--dark-section-bg);
+            border-radius: 10px;
+        }
+        /* Specific TID Settings Section Styles - REMOVED */
+    </style>
+</head>
+<body>
+    <!-- Removed Navigation Bar -->
+
+    <div class="section-container excel-text-section">
+        <div class="heading-container">
+            <h2>Upload Excel File for Text Generation</h2>
+        </div>
+        <div class="file-upload-container">
+            <div class="file-upload-row">
+                <label for="excelFile" class="custom-file-label">
+                    <i class="fas fa-file-upload"></i> Choose File
+                </label>
+                <div class="file-name-display" id="fileNameDisplay">No file chosen</div>
+                <input type="file" id="excelFile" accept=".xlsx, .xls" />
+            </div>
+            <!-- New container for Download All, EMI, and Tenor buttons -->
+            <div class="main-buttons-row">
+                <button id="downloadAll" class="action-button">
+                    <i class="fas fa-download"></i> Download All
+                </button>
+                <!-- EMI and Tenor buttons will be appended here by JS -->
+            </div>
+        </div>
+
+        <div id="tableContainer"></div>
+
+        <div class="heading-container">
+            <h3>Updated Text Block</h3>
+        </div>
+        <div id="textBlock"></div> <!-- Changed from textarea to div -->
+        <button onclick="downloadText()" class="action-button">
+            <i class="fas fa-file-download"></i> Download Current
+        </button>
+    </div>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+        const templateText = `CDT0:400462000000:400462999999:12,13,14,15,16,17,18,19:PUBALI VISA:1111111
+CDT1:409380000000:409380999999:12,13,14,15,16,17,18,19:VISA GOLD:1111111
+CDT2:409416000000:409416999999:12,13,14,15,16,17,18,19:VISA CLASSIC:1111111
+CDT3:44778005000000:44778005999999:12,13,14,15,16,17,18,19:VISA CORPORATE:1111111
+CDT4:409384000000:409384999999:12,13,14,15,16,17,18,19:VISA CLASSIC DEBIT:1111111
+CDT5:44778007000000:44778007999999:12,13,14,15,16,17,18,19:VISA CLASSIC DEBIT:1111111
+CDT6:400000000000:499999999999:12,13,14,15,16,17,18,19:VISA:1111111
+CDT7:539949000000:539949999999:12,13,14,15,16,17,18,19:MC CLASSIC DEBIT:1111111
+CDT8:54067015000000:54067015999999:12,13,14,15,16,17,18,19:MC CORPORATE:1111111
+CDT9:500000000000:599999999999:12,13,14,15,16,17,18,19:MASTERCARD:1111111
+CDT10:222100000000:272099999999:12,13,14,15,16,17,18,19:MASTERCARD:1111111
+CDT11:100000000000:199999999999:12,13,14,15,16,17,18,19:NPSB:1111111
+CDT12:600000000000:699999999999:12,13,14,15,16,17,18,19:MASTERCARD:1111111
+CDT13:639996000000:639996809999:12,13,14,15,16,17,18,19:TAKAPAY:1111111
+EDT0:A0000000031010:VSDC:0010000000:D84004F800:D84000A800:000000:500001:99999999
+EDT1:A0000000032010:VISA ELECT:0010000000:D84004F800:D84000A800:000000:500001:99999999
+EDT2:A0000000033010:VISA INTERLINK:0010000000:D84004F800:D84000A800:000000:500001:99999999
+EDT3:A0000000041010:MASTERCARD:0000000000:F45084800C:F45084800C:000000:500000:99999999
+EDT4:A0000000043060:MAESTRO:0000000000:F45084800C:F45084800C:000000:500000:99999999
+EDT5:A00000033301:UPI:0010000000:D800FC9800:084000A800:000000:500000:99999999
+EDT6:A00000091010:TAKAPAY:0000000000:F45084800C:F45084800C:000000:500001:99999999
+HDT:(TID):(MID):1:1:1:(nii):050:050:TK:115:90:(nii2)
+TCT:(Address1):(Address2):(Address3):(Address4):(Address5):(DBA NAME1):(DBA NAME2):6925:0000:0000:0000:0000:72752692
+MRT:SALE:CASH WITHDRAWL:VOID:EMI SALE+:BATCH REPORT+:BATCH SETTLE:LOGON:ADMIN+
+TXN:SALE=1:VOID=1:QRSALE=0:CASH=0:EMI=(EMI_STATUS):PREAUTH=0:ADJUST=0:SETTLEMENT=1:BALANCE=0:REFUND=0:SHOWTXN=0:LOGON=1:SALECOMPON=0:SALECOMPOFF=0:OFFLINE=0:TIPWITHSALE=0:REPORT=1
+PMTTYP:CHIP=1:NFC=1:CASHNFC=0:MAG=1:MANUAL=0:FALLBACK=0:LAST4DIGIT=0:CVV2INPUT=0
+LIMIT:999:999:100:99999999:50000:2000000:500000:(TENOR_VALUES)
+SLIPPRINT:CUSTOMERCOPY=1:LOGON=1:CARDDETAILSREPORT=0:SETTLEDETAILSREPORT=0:ERRORTXN=1
+EXPMASKING:EXPMASKMC=0:EXPMASKCC=0:EXPMASKDT=0:EXPMASKPREAUTH=0:EXPMASKDISP=0:EXPMASKSHOWTXN=0:EXPMASKEMI=0:EXPMASKERRRP=0
+PANMASKING:PANMASKMC=1:PANMASKCC=0:PANMASKDT=1:PANMASKPREAUTH=2:PANMASKDISP=1:PANMASKSHOWTXN=2:PANMASKEMI=1:PANMASKERRRP=1
+EMIBIN:5406701500000000,5406701599999999,16:4477800500000000,4477800599999999,16:4094160000000000,4094169999999999,16:4093800000000000,4093809999999999,16:4004620000000000,4004629999999999,16
+CASHBIN:5406701500000000,5406701599999999,16:4477800500000000,4477800599999999,16:4094160000000000,4094169999999999,16:4093800000000000,4093809999999999,16:4004620000000000,4004629999999999,16:4093840000000000,4093849999999999,16:5399490000000000,5399499999999999,16:4477800700000000,4477800799999999,16
+SIMBIN:BANGLALINK=0:GRAMEENPHONE=0:ROBI=0:OTHERS=0
+IPBIN:192.168.224.69:172.31.1.43:10.230.27.5:172.31.1.43:5300:5200:5300:5200
+SUPPORTBIN:OFFICERNAME=(contactName):OFFICERMOBILE=(contactPhone):ENGNAME=SUSANTA:ENGMOBILE=01806971101`;
+
+        // Global state variables for EMI and Tenor
+        let isEmiOn = false; // Default EMI is off (global)
+        let isTenorExtended = false; // Default Tenor is not extended (global)
+
+        /**
+         * Splits an address string into multiple lines based on a maximum line length.
+         * Each line is also trimmed of trailing spaces or punctuation.
+         * Ensures exactly 5 lines are returned, padding with empty strings if necessary.
+         * @param {string} text - The full address string.
+         * @returns {string[]} An array of up to 5 address lines.
+         */
+        function splitAddress(text) {
+            const maxLen = 30; // Max length for Address1 to Address4
+            let words = text.split(/\s+/);
+            let lines = [];
+            let currentLine = '';
+            let wordIndex = 0;
+
+            // Fill Address1 to Address4
+            for (let i = 0; i < 4; i++) {
+                currentLine = '';
+                while (wordIndex < words.length) {
+                    const word = words[wordIndex];
+                    const potentialLine = currentLine ? currentLine + ' ' + word : word;
+
+                    if (potentialLine.length <= maxLen) {
+                        currentLine = potentialLine;
+                        wordIndex++;
+                    } else {
+                        // If the word itself is longer than maxLen, or adding it exceeds maxLen,
+                        // and currentLine is empty, then the word must be truncated.
+                        if (!currentLine && word.length > maxLen) {
+                            currentLine = word.substring(0, maxLen);
+                            words[wordIndex] = word.substring(maxLen); // Keep the rest for next line/Address5
+                        }
+                        break; // Move to the next line
+                    }
+                }
+                lines.push(currentLine.replace(/[,.()\-]+\s*$/, '').trim());
+                if (wordIndex >= words.length) {
+                    break; // No more words left
+                }
+            }
+
+            // Put all remaining words into Address5
+            let remainingText = words.slice(wordIndex).join(' ').replace(/[,.()\-]+\s*$/, '').trim();
+            lines.push(remainingText);
+
+            // Ensure exactly 5 lines, padding with empty strings if needed
+            while (lines.length < 5) {
+                lines.push('');
+            }
+            // If somehow more than 5 lines were generated (e.g., due to truncation of very long words),
+            // combine the extra into Address5. This is a safeguard.
+            if (lines.length > 5) {
+                let extraLines = lines.splice(4); // Take all lines from index 4 onwards
+                lines[4] = lines[4] + (extraLines.length > 0 ? ' ' + extraLines.join(' ').trim() : '');
+                lines[4] = lines[4].replace(/[,.()\-]+\s*$/, '').trim();
+            }
+
+
+            return lines;
+        }
+
+        /**
+         * Helper function to clean part2 string by replacing underscores,
+         * ensuring spaces after commas, and removing hyphens from C-X patterns.
+         * @param {string} text - The string to clean.
+         * @returns {string} The cleaned string.
+         */
+        function cleanPart2(text) {
+            if (!text) return '';
+            let cleaned = text.replace(/_/g, ' '); // 1. Replace underscores with spaces
+
+            // 2. Convert C-X to CX FIRST (e.g., C-1 to C1)
+            cleaned = cleaned.replace(/C-(\d+)/gi, 'C$1'); 
+
+            // 3. Then, replace other hyphens with spaces (if any remain)
+            cleaned = cleaned.replace(/-/g, ' '); 
+
+            cleaned = cleaned.replace(/,(\S)/g, ', $1'); // 4. Add a space after a comma if not already present
+
+            // 5. Reordering logic: if it starts with CX:LOCATION, make it LOCATION CX
+            const reorderMatch = cleaned.match(/^(C\d+):(.+)$/i);
+            if (reorderMatch) {
+                cleaned = `${reorderMatch[2].trim()} ${reorderMatch[1].trim()}`;
+            }
+            
+            // 6. Remove any trailing colons that might remain from the original string
+            cleaned = cleaned.replace(/:+$/, '').trim();
+
+            return cleaned.trim();
+        }
+
+        /**
+         * Splits a DBA name into two parts, handling underscore replacement and
+         * prioritizing specific patterns for splitting.
+         * @param {string} dbaFull - The full DBA name string.
+         * @returns {[string, string]} An array containing two parts of the DBA name: [dbaName1, dbaName2].
+         */
+        function splitDBA(dbaFull) {
+            console.log("splitDBA called with dbaFull:", dbaFull);
+            let part1 = '';
+            let part2 = '';
+            const MAX_PART1_LENGTH = 22; // Target length for part1
+
+            let cleanedDba = dbaFull.trim().replace(/_/g, ' '); // Clean underscores early
+
+            // New Rule: Transform "(PVT.) LTD." to "PVT. LTD."
+            // This needs to happen before other splitting rules to ensure the structure is correct.
+            const pvtLtdMatch = cleanedDba.match(/(.*)\s*\(PVT\.\)\s*LTD\.\s*$/i);
+            if (pvtLtdMatch) {
+                console.log("Matched (PVT.) LTD. rule:", pvtLtdMatch);
+                cleanedDba = pvtLtdMatch[1].trim() + ' PVT. LTD.';
+                console.log("Transformed DBA for (PVT.) LTD. rule:", cleanedDba);
+            }
+
+
+            // Rule: Prioritize if DBA NAME ends with " WORD C-X" or "WORD-C X"
+            const revisedCXRuleMatch = cleanedDba.match(/^(.*)\s+([A-Z0-9]+(?:[- ]?C\s*\d+))$/i);
+
+            if (revisedCXRuleMatch) {
+                console.log("Matched revised C-X rule:", revisedCXRuleMatch);
+                let prefixForPart1 = revisedCXRuleMatch[1].trim(); // e.g., "SHWAPNO F327 WABDA ROAD" or "XXX XXXXXX"
+                let suffixForPart2 = revisedCXRuleMatch[2].trim(); // e.g., "RAMPURA C-1" or "XXXXXXXX-C 01"
+
+                // Apply MAX_PART1_LENGTH to prefixForPart1
+                const prefixWords = prefixForPart1.split(/\s+/);
+                let tempPart1Words = [];
+                let tempPart2FromPrefixWords = []; // Words from prefix that don't fit in part1
+
+                for (let i = 0; i < prefixWords.length; i++) {
+                    const currentWord = prefixWords[i];
+                    const potentialLength = (tempPart1Words.length > 0 ? tempPart1Words.join(' ').length + 1 : 0) + currentWord.length;
+
+                    if (potentialLength <= MAX_PART1_LENGTH) {
+                        tempPart1Words.push(currentWord);
+                    } else {
+                        tempPart2FromPrefixWords.push(currentWord);
+                    }
+                }
+
+                part1 = tempPart1Words.join(' ').trim();
+                // Concatenate any overflow from prefixForPart1 with the identified suffixForPart2
+                part2 = cleanPart2(tempPart2FromPrefixWords.join(' ') + ' ' + suffixForPart2);
+
+                console.log("Final result for revised C-X rule - Part1:", part1, "Part2:", part2);
+                return [part1, part2];
+            }
+
+            // Fallback: General word-by-word splitting (existing logic)
+            const words = cleanedDba.split(/\s+/);
+            
+            let currentPart1Words = [];
+            let currentPart2Words = [];
+
+            for (let i = 0; i < words.length; i++) {
+                const currentWord = words[i];
+                const potentialPart1Length = (currentPart1Words.length > 0 ? currentPart1Words.join(' ').length + 1 : 0) + currentWord.length;
+
+                if (potentialPart1Length <= MAX_PART1_LENGTH) {
+                    currentPart1Words.push(currentWord);
+                } else {
+                    currentPart2Words.push(currentWord);
+                }
+            }
+
+            part1 = currentPart1Words.join(' ').trim();
+            part2 = cleanPart2(currentPart2Words.join(' '));
+
+            if (part1 === '' && words.length > 0) {
+                part1 = cleanedDba;
+                part2 = '';
+            }
+
+            console.log("Fallback Result - Part1:", part1, "Part2:", part2);
+            return [part1, part2];
+        }
+
+        /**
+         * Processes a single row of data from the Excel sheet,
+         * populating the templateText with the extracted information.
+         * Updates the textBlock div and returns the generated configuration string.
+         * @param {Array} rowData - An array representing a single row from the Excel sheet.
+         * @param {boolean} [silent=false] - If true, prevents updating the textBlock UI.
+         * @returns {string} The generated configuration string.
+         */
+        function processRowForText(rowData, silent = false) {
+            console.log("processRowForText called with rowData:", rowData);
+
+            // Ensure columnMap is available
+            const currentColumnMap = window.columnMap;
+            if (!currentColumnMap) {
+                console.error("Column map not found. Please upload an Excel file first.");
+                if (!silent) {
+                    document.getElementById('textBlock').textContent = templateText; // Use textContent for div
+                }
+                return templateText;
+            }
+            console.log("Current Column Map:", currentColumnMap);
+
+
+            // Extract and trim data using dynamic column indices
+            const tid = rowData?.[currentColumnMap['TID']] ? String(rowData[currentColumnMap['TID']]).trim() : '';
+            const mid = rowData?.[currentColumnMap['MID']] ? String(rowData[currentColumnMap['MID']]).trim() : '';
+            const operatorRaw = rowData?.[currentColumnMap['OPERATOR NAME']] ? String(rowData[currentColumnMap['OPERATOR NAME']]).trim().toLowerCase() : '';
+            const dbaFull = rowData?.[currentColumnMap['DBA NAME']] ? String(rowData[currentColumnMap['DBA NAME']]).trim() : '';
+            const addressFull = rowData?.[currentColumnMap['ADDRESS']] ? String(rowData[currentColumnMap['ADDRESS']]).trim().replace(/:/g, '-') : '';
+            const contactName = rowData?.[currentColumnMap['BANK CONT. PERSON NAME']] ? String(rowData[currentColumnMap['BANK CONT. PERSON NAME']]).trim() : '';
+            const contactPhone = rowData?.[currentColumnMap['BANK CONT. PERSON NUMBER']] ? String(rowData[currentColumnMap['BANK CONT. PERSON NUMBER']]).trim() : '';
+
+            console.log("Extracted Data - TID:", tid, "MID:", mid, "Operator:", operatorRaw, "DBA Full:", dbaFull, "Address Full:", addressFull, "Contact Name:", contactName, "Contact Phone:", contactPhone);
+
+            // Determine EMI and Tenor status based on global defaults
+            const currentEmiStatus = isEmiOn; 
+            const currentTenorExtended = isTenorExtended; 
+            console.log(`Using global settings: EMI=${currentEmiStatus}, Tenor=${currentTenorExtended}`);
+
+            // Determine NII values based on the operator
+            let nii = '000'; // Default NII
+            let nii2 = '6000000000'; // Default nii2 (assuming a default for 'OTHERS' or unknown)
+
+            if (operatorRaw === 'robi') {
+                nii = '003'; // Changed to 3 digits
+                nii2 = '6000030000';
+            } else if (operatorRaw === 'bl') { // Banglalink
+                nii = '002'; // Changed to 3 digits
+                nii2 = '6000020000';
+            } else if (operatorRaw === 'gp') { // Grameenphone
+                nii = '001'; // Changed to 3 digits
+                nii2 = '6000010000';
+            }
+            console.log("NII:", nii, "NII2:", nii2);
+
+            // Determine SIMBIN configuration based on the operator
+            let simbinBanglalink = 0;
+            let simbinGrameenphone = 0;
+            let simbinRobi = 0;
+            let simbinOthers = 0;
+
+            if (operatorRaw === 'bl') {
+                simbinBanglalink = 1;
+            } else if (operatorRaw === 'gp') {
+                simbinGrameenphone = 1;
+            } else if (operatorRaw === 'robi') {
+                simbinRobi = 1;
+            } else {
+                simbinOthers = 1; // If operator is not BL, GP, or Robi, then OTHERS is 1
+            }
+            // Construct the SIMBIN string
+            const simbin = `BANGLALINK=${simbinBanglalink}:GRAMEENPHONE=${simbinGrameenphone}:ROBI=${simbinRobi}:OTHERS=${simbinOthers}`;
+            console.log("SIMBIN:", simbin);
+
+            // Determine EMI status based on currentEmiStatus
+            const emiStatus = currentEmiStatus ? '1' : '0';
+            console.log("EMI Status:", emiStatus);
+
+            // Determine Tenor values based on currentTenorExtended
+            const tenorValues = currentTenorExtended ? '3,6,9,12,18,24' : '3,6,9,12';
+            console.log("Tenor Values:", tenorValues);
+
+            // Process address and DBA name using helper functions
+            const addrLines = splitAddress(addressFull);
+            const [dbaName1, dbaName2] = splitDBA(dbaFull); // Call splitDBA here
+            console.log("Address Lines:", addrLines);
+            console.log("DBA Split - Part1:", dbaName1, "Part2:", dbaName2);
+
+            // Perform replacements in the templateText
+            // Use a more robust regex for SIMBIN to replace the entire line
+            const updatedText = templateText
+                .replace(/\(TID\)/g, tid)
+                .replace(/\(MID\)/g, mid)
+                .replace(/\(nii\)/g, nii)
+                .replace(/\(nii2\)/g, nii2)
+                .replace(/\(Address1\)/g, addrLines[0])
+                .replace(/\(Address2\)/g, addrLines[1])
+                .replace(/\(Address3\)/g, addrLines[2])
+                .replace(/\(Address4\)/g, addrLines[3])
+                .replace(/\(Address5\)/g, addrLines[4])
+                .replace(/\(DBA NAME1\)/g, dbaName1) // Will replace with split DBA NAME1
+                .replace(/\(DBA NAME2\)/g, dbaName2) // Will replace with split DBA NAME2
+                // This regex specifically targets the SIMBIN line to replace its entire value
+                .replace(/^SIMBIN:.*$/m, `SIMBIN:${simbin}`) // Using multiline flag 'm' to match start of line
+                .replace(/\(contactName\)/g, contactName)
+                .replace(/\(contactPhone\)/g, contactPhone)
+                .replace(/\(EMI_STATUS\)/g, emiStatus) // Replace EMI status
+                .replace(/\(TENOR_VALUES\)/g, tenorValues); // Replace Tenor values
+
+            console.log("Final Updated Text:", updatedText);
+            // Update the textarea with the generated text
+            if (!silent) {
+                document.getElementById('textBlock').textContent = updatedText; // Use textContent for div
+            }
+            return updatedText;
+        }
+
+        /**
+         * Initiates a download of the text currently in the textBlock div.
+         * The filename is derived from the TID found in the generated text.
+         */
+        function downloadText() {
+            const text = document.getElementById('textBlock').textContent; // Use textContent for div
+            let tid = 'config_output'; // Default filename
+
+            // Attempt to extract TID from the HDT line in the generated text
+            const hdtMatch = text.match(/^HDT:(\d+):/m);
+            if (hdtMatch && hdtMatch[1]) {
+                tid = hdtMatch[1].trim();
+            }
+
+            // Create a Blob, then a temporary URL, and trigger a download
+            const blob = new Blob([text], {
+                type: 'text/plain'
+            });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${tid}.txt`; // Set the download filename
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link); // Clean up the temporary link
+        }
+
+        /**
+         * Processes a specific row from Excel data and immediately triggers a download
+         * of the generated configuration file for that row.
+         * @param {Array} rowData - An array representing a single row from the Excel sheet.
+         */
+        function downloadRowTextExcel(rowData) {
+            const text = processRowForText(rowData); // First, generate the text for this row
+            let tid = 'config_output';
+
+            const hdtMatch = text.match(/^HDT:(\d+):/m);
+            if (hdtMatch && hdtMatch[1]) {
+                tid = hdtMatch[1].trim();
+            }
+
+            const blob = new Blob([text], {
+                type: 'text/plain'
+            });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${tid}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Function to toggle EMI status and update button text and icon (GLOBAL)
+        function toggleEmiGlobal() {
+            isEmiOn = !isEmiOn; // Toggle the boolean
+            const emiButton = document.getElementById('toggleEmiButton'); 
+            if (emiButton) {
+                emiButton.innerHTML = `<i class="fas fa-toggle-${isEmiOn ? 'on' : 'off'}"></i> EMI ${isEmiOn ? 'ON' : 'OFF'}`;
+                emiButton.style.backgroundColor = isEmiOn ? '#ff4d03' : '#6c757d';
+                emiButton.style.color = '#000000';
+            }
+            // If a row is currently previewed, re-process it to reflect the global change
+            if (window.lastProcessedRowData) {
+                processRowForText(window.lastProcessedRowData);
+            } else {
+                // If no row has been processed, update the template text with current EMI/Tenor state
+                document.getElementById('textBlock').textContent = templateText // Use textContent for div
+                    .replace(/\(EMI_STATUS\)/g, isEmiOn ? '1' : '0')
+                    .replace(/\(TENOR_VALUES\)/g, isTenorExtended ? '3,6,9,12,18,24' : '3,6,9,12');
+            }
+        }
+
+        // Function to toggle Tenor status and update button text and icon (GLOBAL)
+        function toggleTenorGlobal() {
+            isTenorExtended = !isTenorExtended; // Toggle the boolean
+            const tenorButton = document.getElementById('toggleTenorButton'); 
+            if (tenorButton) {
+                tenorButton.innerHTML = `<i class="fas fa-toggle-${isTenorExtended ? 'on' : 'off'}"></i> Tenor ${isTenorExtended ? 'EXTENDED' : 'STANDARD'}`;
+                tenorButton.style.backgroundColor = isTenorExtended ? '#ff4d03' : '#6c757d';
+                tenorButton.style.color = '#000000';
+            }
+            // If a row is currently previewed, re-process it to reflect the global change
+            if (window.lastProcessedRowData) {
+                processRowForText(window.lastProcessedRowData);
+            } else {
+                // If no row has been processed, update the template text with current EMI/Tenor state
+                document.getElementById('textBlock').textContent = templateText // Use textContent for div
+                    .replace(/\(EMI_STATUS\)/g, isEmiOn ? '1' : '0')
+                    .replace(/\(TENOR_VALUES\)/g, isTenorExtended ? '3,6,9,12,18,24' : '3,6,9,12');
+            }
+        }
+
+        // Event listener for when an Excel file is selected
+        document.getElementById('excelFile').addEventListener('change', function(e) {
+            console.log("Excel file selected event fired.");
+            const file = e.target.files[0];
+            if (!file) {
+                console.log("No file chosen. Resetting display.");
+                // If no file is chosen, reset the filename display and table, and show default template
+                document.getElementById('fileNameDisplay').textContent = "No file chosen";
+                document.getElementById('tableContainer').innerHTML = '';
+                // Ensure default template reflects current toggle states
+                document.getElementById('textBlock').textContent = templateText // Use textContent for div
+                    .replace(/\(EMI_STATUS\)/g, isEmiOn ? '1' : '0')
+                    .replace(/\(TENOR_VALUES\)/g, isTenorExtended ? '3,6,9,12,18,24' : '3,6,9,12');
+                window.lastProcessedRowData = null;
+                return;
+            }
+
+            document.getElementById('fileNameDisplay').textContent = file.name;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                console.log("FileReader loaded data.");
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {
+                    type: 'array'
+                });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const json = XLSX.utils.sheet_to_json(sheet, {
+                    header: 1
+                });
+                console.log("Excel data parsed to JSON:", json);
+
+                if (!json || json.length === 0) {
+                    console.log("No data found in sheet. Displaying empty message.");
+                    document.getElementById('tableContainer').innerHTML = '<p>No data found in sheet.</p>';
+                    // Reset text block to default template if no data
+                    document.getElementById('textBlock').textContent = templateText // Use textContent for div
+                        .replace(/\(EMI_STATUS\)/g, isEmiOn ? '1' : '0')
+                        .replace(/\(TENOR_VALUES\)/g, isTenorExtended ? '3,6,9,12,18,24' : '3,6,9,12');
+                    window.lastProcessedRowData = null; // Clear last processed row
+                    return;
+                }
+
+                window.excelJson = json; // Store full JSON for processing
+
+                // Define the target columns and their corresponding keys for the columnMap
+                const targetColumnNames = {
+                    'TID': ['TID', 'TERMINAL ID'],
+                    'MID': ['MID', 'MERCHANT ID'],
+                    'DBA NAME': ['DBA NAME', 'DBA'],
+                    'ADDRESS': ['ADDRESS', 'LOCATION'],
+                    'BANK CONT. PERSON NAME': ['BANK CONT. PERSON NAME', 'CONTACT NAME'],
+                    'BANK CONT. PERSON NUMBER': ['BANK CONT. PERSON NUMBER', 'CONTACT PHONE', 'PHONE'],
+                    'OPERATOR NAME': ['OPERATOR NAME', 'OPERATOR']
+                };
+
+                // Create a map to store the actual column index for each target column
+                const columnMap = {};
+                const rawHeaders = json[0] || [];
+                console.log("Raw Headers:", rawHeaders);
+
+                Object.keys(targetColumnNames).forEach(targetKey => {
+                    const possibleNames = targetColumnNames[targetKey];
+                    for (let i = 0; i < rawHeaders.length; i++) {
+                        const currentHeader = String(rawHeaders[i]).trim().toUpperCase();
+                        if (possibleNames.some(name => name.toUpperCase() === currentHeader)) {
+                            columnMap[targetKey] = i;
+                            console.log(`Mapped '${targetKey}' to column index ${i} (header: '${rawHeaders[i]}')`);
+                            break; // Found the column, move to the next target key
+                        }
+                    }
+                });
+                window.columnMap = columnMap; // Store the map globally
+                console.log("Final Column Map:", window.columnMap);
+
+
+                let tableHTML = '<table><thead><tr>';
+                // Add Actions and S/N headers first
+                tableHTML += `<th>Actions</th><th>S/N</th>`;
+                // Display only the headers that were successfully mapped
+                Object.keys(targetColumnNames).forEach(colName => {
+                    if (columnMap[colName] !== undefined) {
+                        tableHTML += `<th>${colName}</th>`;
+                    }
+                });
+                tableHTML += '</tr></thead><tbody>';
+
+                for (let i = 1; i < json.length; i++) {
+                    tableHTML += '<tr>';
+                    const rowData = json[i];
+                    
+                    // Add Actions column
+                    tableHTML += `<td>
+                        <button class="table-action-button" onclick="window.lastProcessedRowData = window.excelJson[${i}]; processRowForText(window.lastProcessedRowData);"><i class="fas fa-play"></i></button>
+                        <button class="table-action-button" onclick="downloadRowTextExcel(window.excelJson[${i}])"><i class="fas fa-download"></i></button>
+                    </td>`;
+                    // Add S/N column (1-based index)
+                    tableHTML += `<td>${i}</td>`;
+
+                    // Populate row data for display using the mapped indices
+                    Object.keys(targetColumnNames).forEach(colName => {
+                        const colIndex = columnMap[colName];
+                        if (colIndex !== undefined && rowData[colIndex] !== undefined) {
+                            tableHTML += `<td>${rowData[colIndex] ?? ''}</td>`;
+                        } else {
+                            tableHTML += `<td></td>`; // Push empty cell if column not found or data missing
+                        }
+                    });
+                    tableHTML += '</tr>';
+                }
+
+                tableHTML += '</tbody></table>';
+                document.getElementById('tableContainer').innerHTML = tableHTML;
+                console.log("Table rendered.");
+
+                // Automatically preview the first data row if available
+                if (json.length > 1) {
+                    console.log("Processing first data row for initial preview.");
+                    window.lastProcessedRowData = json[1];
+                    processRowForText(json[1]);
+                } else {
+                    console.log("No data rows found. Displaying default template.");
+                    // If only headers or no data, show default template
+                    document.getElementById('textBlock').textContent = templateText // Use textContent for div
+                        .replace(/\(EMI_STATUS\)/g, isEmiOn ? '1' : '0')
+                        .replace(/\(TENOR_VALUES\)/g, isTenorExtended ? '3,6,9,12,18,24' : '3,6,9,12');
+                    window.lastProcessedRowData = null;
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        // Event listener for when the DOM is fully loaded
+        document.addEventListener("DOMContentLoaded", function() {
+            console.log("DOMContentLoaded event fired.");
+            const fileInputExcel = document.getElementById("excelFile");
+            const fileNameDisplay = document.getElementById("fileNameDisplay");
+            const downloadAllButton = document.getElementById("downloadAll");
+            const textBlock = document.getElementById('textBlock');
+
+            // Set initial preview text, applying initial EMI/Tenor states
+            textBlock.textContent = templateText // Use textContent for div
+                .replace(/\(EMI_STATUS\)/g, isEmiOn ? '1' : '0')
+                .replace(/\(TENOR_VALUES\)/g, isTenorExtended ? '3,6,9,12,18,24' : '3,6,9,12');
+            console.log("Initial textBlock content set.");
+
+            // Get the main container for Download All, EMI, and Tenor buttons
+            const mainButtonsRow = document.querySelector('.main-buttons-row');
+
+            // Create EMI and Tenor buttons and append them to the main-buttons-row
+            const emiButton = document.createElement('button');
+            emiButton.id = 'toggleEmiButton'; 
+            emiButton.classList.add('action-button');
+            emiButton.innerHTML = `<i class="fas fa-toggle-${isEmiOn ? 'on' : 'off'}"></i> EMI ${isEmiOn ? 'ON' : 'OFF'}`;
+            emiButton.style.backgroundColor = isEmiOn ? '#ff4d03' : '#6c757d';
+            emiButton.style.color = '#000000';
+            emiButton.addEventListener('click', toggleEmiGlobal); 
+            mainButtonsRow.appendChild(emiButton); 
+            console.log("EMI button created and appended to main row.");
+
+            const tenorButton = document.createElement('button');
+            tenorButton.id = 'toggleTenorButton'; 
+            tenorButton.classList.add('action-button');
+            tenorButton.innerHTML = `<i class="fas fa-toggle-${isTenorExtended ? 'on' : 'off'}"></i> Tenor ${isTenorExtended ? 'EXTENDED' : 'STANDARD'}`;
+            tenorButton.style.backgroundColor = isTenorExtended ? '#ff4d03' : '#6c757d';
+            tenorButton.style.color = '#000000';
+            tenorButton.addEventListener('click', toggleTenorGlobal); 
+            mainButtonsRow.appendChild(tenorButton); 
+            console.log("Tenor button created and appended to main row.");
+
+            fileInputExcel.addEventListener("change", function() {
+                if (fileInputExcel.files.length > 0) {
+                    fileNameDisplay.textContent = fileInputExcel.files[0].name;
+                } else {
+                    fileNameDisplay.textContent = "No file chosen";
+                }
+            });
+
+            if (downloadAllButton) {
+                downloadAllButton.addEventListener('click', async function() { // Added async keyword
+                    console.log("Download All button clicked.");
+                    if (window.excelJson && window.excelJson.length > 1 && window.columnMap) {
+                        const zip = new JSZip();
+                        let filesAdded = 0;
+
+                        // Display a loading message or disable button during processing
+                        downloadAllButton.disabled = true;
+                        downloadAllButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Zipping...';
+
+                        for (let i = 1; i < window.excelJson.length; i++) {
+                            const rowData = window.excelJson[i];
+                            // Pass current global EMI/Tenor settings to processRowForText
+                            const generatedText = processRowForText(rowData, true); // Process silently
+
+                            let tid = 'config_output_' + i; // Fallback TID
+                            const hdtMatch = generatedText.match(/^HDT:(\d+):/m);
+                            if (hdtMatch && hdtMatch[1]) {
+                                tid = hdtMatch[1].trim();
+                            }
+                            zip.file(`${tid}.txt`, generatedText);
+                            filesAdded++;
+                        }
+
+                        if (filesAdded > 0) {
+                            try {
+                                const content = await zip.generateAsync({ type: "blob" });
+                                const zipFileName = "all_configurations.zip";
+                                const link = document.createElement('a');
+                                link.href = URL.createObjectURL(content);
+                                link.download = zipFileName;
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                console.log(`Generated and downloaded ${zipFileName}`);
+                            } catch (error) {
+                                console.error("Error generating ZIP:", error);
+                                // Changed alert to a more user-friendly message in the UI
+                                // This message will now appear in the main text block area or similar.
+                                document.getElementById('textBlock').textContent = "Failed to generate ZIP file. Please try again.";
+                            }
+                        } else {
+                            console.log('No configurations generated to zip.');
+                            document.getElementById('textBlock').textContent = 'No configurations generated to zip. Please ensure your Excel file has data.';
+                        }
+
+                        // Re-enable button and restore text
+                        downloadAllButton.disabled = false;
+                        downloadAllButton.innerHTML = '<i class="fas fa-download"></i> Download All';
+
+                    } else {
+                        console.log('Download All: Please upload an Excel file and ensure it contains data rows to download.');
+                        document.getElementById('textBlock').textContent = 'Please upload an Excel file and ensure it contains data rows to download.';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
